@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathematics Lab</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body class="lab-bg">
+    <header class="status-bar">
+        <div id="user-rank">Junior Alchemist</div>
+        <div id="voice-toggle" class="icon">🔊</div>
+    </header>
+
+    <main id="app-container">
+        <div id="instruction-text">Welcome to the Lab. Drag the Constant to the box.</div>
+
+        <div id="target-box" class="drop-zone"></div>
+
+        <div id="block-container">
+            <div id="constant-8" class="block constant" draggable="true">8</div>
+            <div id="variable-y" class="block variable" draggable="true">y</div>
+        </div>
+    </main>
+
+    <section id="mastery-vault" class="hidden">
+        <h2>Your Mastery Vault</h2>
+        <div class="badge-slot" id="ghostbuster-badge"></div>
+    </section>
+
+    <div id="math-lens" class="lens-tool">
+        <div class="lens-glass"></div>
+        <div class="lens-handle"></div>
+    </div>
+
+    <div id="term-container">
+        <span class="hidden-math coeff">1</span>
+        <span class="main-variable">x</span>
+        <span class="hidden-math exp">1</span>
+    </div>
+
+    <div id="translator-lab">
+        <div class="phrase-display">
+            "The <span class="keyword" data-math="+">sum</span> of
+            <span class="keyword" data-math="x">a number</span> and
+            <span class="keyword" data-math="12">twelve</span>"
+        </div>
+
+        <div id="construction-grid" class="drop-zone"></div>
+    </div>
+
+    <div id="sorter-lab">
+        <div id="unfiltered-stream" class="term-area">
+            <div class="draggable-term family-x" data-value="4">+4x</div>
+            <div class="draggable-term family-const" data-value="7">+7</div>
+            <div class="draggable-term family-x" data-value="2">+2x</div>
+            <div class="draggable-term family-const" data-value="-3">-3</div>
+        </div>
+
+        <div class="bin-container">
+            <div id="bin-x" class="family-bin" data-family="x">
+                <span class="bin-label">X-FAMILY</span>
+                <div class="bin-content"></div>
+            </div>
+
+            <div id="bin-const" class="family-bin" data-family="const">
+                <span class="bin-label">CONSTANTS</span>
+                <div class="bin-content"></div>
+            </div>
+        </div>
+
+        <button id="merge-btn" class="locked">Combine Families</button>
+    </div>
+
+    <div id="vault-overlay" class="hidden">
+        <div class="vault-header">
+            <h1>MASTERY VAULT</h1>
+            <div class="user-rank-display">Rank: <span id="rank-title">Remix Architect</span></div>
+        </div>
+
+        <div class="badge-grid">
+            <div class="badge-container" id="badge-anatomy">
+                <div class="badge-icon locked">?</div>
+                <span class="badge-label">The Ghostbuster</span>
+            </div>
+
+            <div class="badge-container" id="badge-translation">
+                <div class="badge-icon locked">?</div>
+                <span class="badge-label">The Linguistic</span>
+            </div>
+
+            <div class="badge-container" id="badge-sorter">
+                <div class="badge-icon locked">?</div>
+                <span class="badge-label">Remix Master</span>
+            </div>
+        </div>
+
+        <button id="close-vault">Back to Lab</button>
+    </div>
+
+    <div id="user-profile" class="profile-container">
+        <div class="profile-header">
+            <img src="avatar-placeholder.png" class="user-avatar">
+            <div class="user-info">
+                <h2>Lab Architect: Linda</h2>
+                <p>Member since: 2026</p>
+            </div>
+        </div>
+
+        <div class="health-map-section">
+            <h3>Logic Health Map</h3>
+            <div id="hex-grid">
+                <div class="hex-cell" data-skill="anatomy"><span>Anatomy</span></div>
+                <div class="hex-cell" data-skill="translation"><span>Translation</span></div>
+                <div class="hex-cell" data-skill="sorting"><span>Sorting</span></div>
+                <div class="hex-cell" data-skill="signs"><span>Signs</span></div>
+                <div class="hex-cell" data-skill="pivots"><span>Pivots</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data tracking for the "Where You Need Work" list
+        let startTime = Date.now();
+        const threshold = 120; // Magnetic pull distance
+
+        const constant = document.getElementById('constant-8');
+        const target = document.getElementById('target-box');
+        let isDragging = false;
+
+        // Track mouse/touch movement
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                moveElement(e.clientX, e.clientY);
+                checkMagneticPull(e.clientX, e.clientY);
+            }
+        });
+
+        function checkMagneticPull(x, y) {
+            const targetRect = target.getBoundingClientRect();
+            const targetCenter = {
+                x: targetRect.left + targetRect.width / 2,
+                y: targetRect.top + targetRect.height / 2
+            };
+
+            const dist = Math.hypot(x - targetCenter.x, y - targetCenter.y);
+
+            if (dist < threshold) {
+                snapToTarget(targetCenter);
+                calculateDiagnostic();
+            }
+        }
+
+        function calculateDiagnostic() {
+            const totalTime = (Date.now() - startTime) / 1000;
+            console.log(`Diagnostic: Solved in ${totalTime}s`);
+            // Logic to send this to your "Where You Need Work" table
+        }
+
+        const lens = document.getElementById('math-lens');
+        const hiddenElements = document.querySelectorAll('.hidden-math');
+
+        document.addEventListener('mousemove', (e) => {
+            // Move the lens with the mouse
+            lens.style.left = `${e.clientX - 50}px`;
+            lens.style.top = `${e.clientY - 50}px`;
+
+            hiddenElements.forEach(el => {
+                const elRect = el.getBoundingClientRect();
+                const lensRect = lens.getBoundingClientRect();
+
+                // Check if the lens is over the hidden number
+                const isOverlapping =!(
+                    lensRect.right < elRect.left ||
+                    lensRect.left > elRect.right ||
+                    lensRect.bottom < elRect.top ||
+                    lensRect.top > elRect.bottom
+                );
+
+                if (isOverlapping) {
+                    el.style.opacity = "1";
+                    el.style.textShadow = "0 0 10px var(--cyan)";
+                    el.parentElement.querySelector('.main-variable').classList.add('active-reveal');
+                } else {
+                    el.style.opacity = "0";
+                    el.parentElement.querySelector('.main-variable').classList.remove('active-reveal');
+                }
+            });
+        });
+
+        const translationSolution = ["x", "+", "12"];
+        let userBuild = [];
+
+        function checkTranslation() {
+            // Join the current blocks in the grid and compare to solution
+            if (JSON.stringify(userBuild) === JSON.stringify(translationSolution)) {
+                triggerSuccessEffect();
+            } else if (userBuild[0] === "12" && userBuild[1] === "+") {
+                // Specifically check for "Turn-Around" errors
+                handleErrorDiagnosis('Turn_Around_Error');
+            }
+        }
+
+        function triggerSuccessEffect() {
+            const grid = document.getElementById('construction-grid');
+            grid.style.borderColor = "var(--emerald)";
+            grid.classList.add('pulse-success');
+            // Play your "Success" audio clip here
+        }
+
+        const pivotPhrases = {
+            "less than": { symbol: "-", isPivot: true },
+            "subtracted from": { symbol: "-", isPivot: true },
+            "fewer than": { symbol: "-", isPivot: true }
+        };
+
+        function validatePlacement(blockType, position, phraseType) {
+            if (phraseType === "less than" && position === 0 && blockType === "constant") {
+                // User is trying to put the '5' first in '5 less than x'
+                triggerPivotAlert();
+            }
+        }
+
+        function triggerPivotAlert() {
+            // 1. Shake the block
+            currentBlock.classList.add('pivot-warning');
+
+            // 2. Play your 'Pivot' audio clip
+            playAudio('recording_turnaround');
+
+            // 3. Highlight the correct slot (the second one)
+            document.getElementById('slot-2').classList.add('pulse-amber');
+        }
+
+        function activateMirrorMode() {
+            const phraseBox = document.querySelector('.phrase-container');
+            phraseBox.classList.add('mirror-active');
+
+            // Pulse the words as they move
+            document.querySelectorAll('.keyword').forEach(word => {
+                word.classList.add('pulse-cyan');
+            });
+
+            // Your Voice Prompt triggers here
+            playAudio('recording_mirror_mode');
+        }
+
+        function onTermDrop(term, bin) {
+            const termFamily = term.dataset.family;
+            const binFamily = bin.dataset.family;
+
+            if (termFamily === binFamily) {
+                // SUCCESS: Term stays in bin
+                bin.querySelector('.bin-content').appendChild(term);
+                checkReadyToMerge();
+            } else {
+                // FAILURE: Trigger the 'Family_Mismatch' Error
+                term.classList.add('shake-animation');
+                handleErrorDiagnosis('Family_Mismatch');
+
+                // Voice Prompt: "Wait, those don't belong to the same family!"
+                playAudio('recording_family_mismatch');
+            }
+        }
+
+        function executeRemix() {
+            // 1. Start the 'Spin' (The Build-up)
+            const bins = document.querySelectorAll('.family-bin');
+            bins.forEach(bin => bin.classList.add('centrifuge-spin'));
+
+            // 2. The Delay (Timing the drop)
+            setTimeout(() => {
+                // Stop spinning and flash the screen
+                document.body.classList.add('bass-drop-flash');
+
+                // 3. The Simplification
+                simplifyXFamily();
+                simplifyConstants();
+
+                // 4. Voice & Sound
+                playAudio('recording_remix_success');
+                // Tip: Use a "Kick Drum" or "Synth Stab" sound effect here!
+
+                setTimeout(() => {
+                    document.body.classList.remove('bass-drop-flash');
+                    bins.forEach(bin => bin.classList.remove('centrifuge-spin'));
+                }, 500);
+            }, 1500);
+        }
+
+        function unlockBadge(levelId) {
+            localStorage.setItem(`badge_${levelId}`, 'unlocked');
+            updateVaultUI();
+        }
+
+        function updateVaultUI() {
+            // Check localStorage for each badge and apply the 'unlocked' class
+        }
+
+        const userStats = {
+            anatomy: 95,
+            translation: 82,
+            sorting: 45, // This will trigger the Coral pulse
+            signs: 90,
+            pivots: 70
+        };
+
+        function renderHealthMap() {
+            Object.keys(userStats).forEach(skill => {
+                const cell = document.querySelector(`[data-skill="${skill}"]`);
+                const score = userStats[skill];
+
+                if (score >= 90) cell.classList.add('status-healthy');
+                else if (score >= 70) cell.classList.add('status-stable');
+                else cell.classList.add('status-critical');
+            });
+        }
+
+        let successStreak = 0;
+        let fastSolveThreshold = 3; // Seconds
+
+        function handleSuccess() {
+            successStreak++;
+            const solveTime = (Date.now() - startTime) / 1000;
+
+            // If they are fast AND on a streak, skip the long animation
+            if (successStreak >= 3 && solveTime < fastSolveThreshold) {
+                triggerExpertSuccess(); // Short, snappy feedback
+            } else {
+                triggerFullBassDrop(); // The full 'Party' celebration
+            }
+        }
+
+        function triggerExpertSuccess() {
+            // Just a quick 'Cyan Flash' and a 0.5s synth stab
+            document.body.classList.add('quick-flash');
+            playAudio('short_success_blip');
+
+            setTimeout(() => {
+                document.body.classList.remove('quick-flash');
+                nextProblem(); // Immediately load the next challenge
+            }, 600);
+        }
+
+        // Placeholder functions - implement as needed
+        function moveElement(x, y) {}
+        function snapToTarget(center) {}
+        function handleErrorDiagnosis(type) {}
+        function playAudio(id) {}
+        function checkReadyToMerge() {}
+        function simplifyXFamily() {}
+        function simplifyConstants() {}
+        function triggerFullBassDrop() {}
+        function nextProblem() {}
+    </script>
+</body>
+</html>
